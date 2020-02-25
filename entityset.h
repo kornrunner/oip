@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -47,11 +47,11 @@ private:
 	float xscale, yscale; //scale between world and screen coords
 	void loadcolors();
 public:
-	entityset():k(.003),dist(.3),damp(.9) {loadcolors(); }
+	entityset():k(.003),dist(.3),damp(.9) { xscale=yscale=0; loadcolors(); }
 	entity& add(int s);
 	void process(double dt);
 	void draw(SDL_Surface*s);
-	int size() const {return elist.size();}	
+	int size() const {return elist.size();}
 	entity* find(int x, int y);
 
 	entity& operator[](int s) {return add(s);}

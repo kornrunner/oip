@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Utah State University    
+    Copyright 2008 Utah State University
 
     This file is part of OIP.
 
@@ -64,7 +64,7 @@ namespace gui
 				FT_Done_FreeType(freetype);
 		}
 	}
-			
+
 	font::font(unsigned char* font_name, double font_size)
 	{
 		FcPattern *pattern, *fpat;
@@ -72,6 +72,9 @@ namespace gui
 		FcChar8 *filename;
 		int font_index;
 		FcMatrix *font_matrix = NULL;
+
+		valid = 0;
+		fontsize = 0;
 
 		if(font_name == NULL)
 		{
@@ -160,9 +163,9 @@ namespace gui
 				cout << "Unable to load the glyph for character '" << *i << "'\n";
 			else
 			{
-				draw_glyph(x+face->glyph->bitmap_left, 
-						   y-face->glyph->bitmap_top, 
-						   &face->glyph->bitmap, surf);	
+				draw_glyph(x+face->glyph->bitmap_left,
+						   y-face->glyph->bitmap_top,
+						   &face->glyph->bitmap, surf);
 				x += face->glyph->advance.x >> 6;
 				y += face->glyph->advance.y >> 6;
 			}
@@ -191,7 +194,7 @@ namespace gui
 				{
 					float a2 = *data/255.0;
 					//use an "over" compositing function
-					*((Uint32*)p+i) = SDL_MapRGBA(s->format, 
+					*((Uint32*)p+i) = SDL_MapRGBA(s->format,
 						(int)(r1*(1-a2) + r2*a2),
 						(int)(g1*(1-a2) + g2*a2),
 						(int)(b1*(1-a2) + b2*a2),
@@ -231,4 +234,4 @@ namespace gui
 
 
 };
-		
+

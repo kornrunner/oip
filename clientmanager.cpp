@@ -28,7 +28,7 @@ using std::cerr;
 #include <unistd.h>
 
 
-//saves the args, and starts up the listening thread. 
+//saves the args, and starts up the listening thread.
 clientmanager::clientmanager(connectioncallback cc, unsigned short port)
 :ccallback(cc), listenport(port), running(true)
 {
@@ -45,13 +45,23 @@ clientmanager::~clientmanager()
 int clientmanager::serverthread(void* d)
 {
 	clientmanager* self = (clientmanager*)d;
-	int listen = socket(PF_INET, SOCK_DGRAM, 0); 
 	unsigned char data[MAXPACKET];
-	struct sockaddr_in addr;
+	struct sockaddr_in addr = {0};
+	int listen = socket(PF_INET, SOCK_DGRAM, 0);
+	if (listen < 0)
+	{
+		perror("failed to open socket in serverthread");
+		exit(1);
+	}
+
 	addr.sin_family = PF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(self->listenport);
-	bind(listen, (struct sockaddr*)&addr, sizeof(addr));
+	if (bind(listen, (struct sockaddr*)&addr, sizeof(addr)))
+	{
+		perror("bind failed");
+		exit(1);
+	}
 	//set up the descriptor set and timeout for a ready check
 	fd_set lset;
 	FD_ZERO(&lset);
@@ -65,14 +75,14 @@ int clientmanager::serverthread(void* d)
 		timeout.tv_sec = 0;
 		timeout.tv_usec = MINRATE * 1000;
 		if (select(listen+1, &lset, NULL, NULL, &timeout)) //is there a packet ready?
-		{	
+		{
 			int len;
 			socklen_t addrlen = sizeof(addr);
 			addr.sin_addr.s_addr = htonl(INADDR_ANY);
 			addr.sin_port = htons(self->listenport);
 			len = recvfrom(listen, data, MAXPACKET, 0, (struct sockaddr*)&addr, &addrlen);
 			aes.decrypt(data, len);
-		
+
 			map<string, string> m;
 			packet incoming(data, len);
 			switch (incoming.gettype())
@@ -115,7 +125,7 @@ int clientmanager::serverthread(void* d)
 			default:
 				cerr << "Unknown message type: " << (int)incoming.gettype() << "\n";
 			}
-			
+
 
 		}
 		//check to see if any of the streams need management
@@ -123,9 +133,9 @@ int clientmanager::serverthread(void* d)
 		{
 			bool drain = false;
 			//check for clock overflow. normally not too worrisome, except that clients
-			//could hang around for up to 50 days if we don't deal with it. 
-			if ((*i)->lastsent > now) //did the clock roll over? 
-				(*i)->lastsent = 0; //gives them a little time. 
+			//could hang around for up to 50 days if we don't deal with it.
+			if ((*i)->lastsent > now) //did the clock roll over?
+				(*i)->lastsent = 0; //gives them a little time.
 
 			//should we remove this one?
 			if ((*i)->dataset.killme())
@@ -148,7 +158,7 @@ int clientmanager::serverthread(void* d)
 				if (!(*i)->dataset.empty())
 					drain = true;
 			}
-			//this is giving me issues. 
+			//this is giving me issues.
 			else if ((*i)->dataset.size() >= datapacket::MAXDATA) //is there too much data in the buffer?
 				drain = true;
 			if (drain) //do we need to drain the buffer?
@@ -163,7 +173,7 @@ int clientmanager::serverthread(void* d)
 				{
 					//moredata = (*i)->dataset.dumpdata(dp);
 					moredata = (*i)->dataset.dumpdata(dp, speed);
-					//encrypt the data 
+					//encrypt the data
 					aes.encrypt(data, dp.paddedsize());
 					sendto(listen, data, dp.paddedsize(), 0, (struct sockaddr*)&addr, sizeof(addr));
 				}
@@ -171,7 +181,7 @@ int clientmanager::serverthread(void* d)
 			}
 
 			//we don't want to increment if we deleted it, so it goes here
-			++i;				
+			++i;
 		}
 	}
 	cout << "Exiting server listening thread\n";

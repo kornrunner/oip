@@ -17,7 +17,7 @@
     along with OIP.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
- * Connects to a given oip server. displays the resulting stream. 
+ * Connects to a given oip server. displays the resulting stream.
  */
 
 
@@ -106,7 +106,7 @@ bool parseopts(int argc, char** argv, map<string, string>& opts)
 			curopt = shortopt;
 			val = argv[i++] + 2;
 		}
-		else 
+		else
 		{
 			cout << "Invalid option syntax. \n";
 			return false;
@@ -129,7 +129,7 @@ void usage(const char* appname)
 	cout << "Usage: appname [options]\n";
 	for (i = 0; i < OPTSIZE; i++)
 	{
-		cout << "  -" << validopts[i][0] 
+		cout << "  -" << validopts[i][0]
 			 << " --" << left << setw(10) << validopts[i][1]
 			 << " "  << validopts[i][2];
 		if (validopts[i][3])
@@ -157,7 +157,7 @@ SDL_Surface* resize(int w, int h)
 		cout << "Unable to get a hardware surface, falling back on software\n";
 		screen = SDL_SetVideoMode(w,h,32, SDL_SWSURFACE|SDL_RESIZABLE);
 	}
-	if (!screen) 
+	if (!screen)
 	{
 		cout << "Unable to set display: " << SDL_GetError() << "\n";
 		return NULL;
@@ -281,7 +281,7 @@ struct servopts
 	gui::textbox* pcap_file_to_read;
 	gui::option* mnu;
 	servopts(packetmanager*&pl, gui::textbox* s, gui::textbox*p, gui::textbox*f, gui::option* m)
-	:plist(&pl),server(s),port(p),filter(f),mnu(m) {}
+	:plist(&pl),server(s),port(p),filter(f),mnu(m) {speed=pcap_file_to_read=NULL;}
 };
 void newconnection(bool selected, void* arg)
 {
@@ -293,13 +293,13 @@ void newconnection(bool selected, void* arg)
 	if (f != "")
 		opts["filter"] = f;
 	*(self->plist) = new clientpm(
-		self->server->getString().c_str(), 
-		opts, 
+		self->server->getString().c_str(),
+		opts,
 		atoi(self->port->getString().c_str())
 		);
 	SDL_WM_SetCaption((self->server->getString() + ":" + f).c_str(), "Oip");
 	self->mnu->activate();
-	
+
 }
 void killconnection(bool selected, void* arg)
 {
@@ -386,7 +386,7 @@ int main(int argc, char* argv[])
 			customlabels.push_back("");
 		cout << "custom command #" << i << " '" << customlabels[i] << "' => '" << customcommands[i] << "'\n";
 	}
-	
+
 
 
 	// Pcap file passed by argument
@@ -451,7 +451,7 @@ int main(int argc, char* argv[])
 	connection.setString("Connection");
 	menu.addchild(connection, 0, 0);
 	menu.addchild(connectionmenu, 0, 30);
-	
+
 	//the capreader menu
 	gui::textbox pcapfile(DATADIR "mnubg.png");
 	pcapfile.setFont(mnufont);
@@ -519,9 +519,9 @@ int main(int argc, char* argv[])
 		popupmenu.addchild(*b, 0, 36 + i*18);
 	}
 
-			
+
 	popupmenu.hide();
-	
+
 
 
 	if (speed == "")
@@ -550,14 +550,14 @@ int main(int argc, char* argv[])
 
 	while(run)
 	{
-	
+
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
 		{
 			//cout << "something has happened\n";
 			switch (event.type)
 			{
-			case SDL_QUIT: 
+			case SDL_QUIT:
 				run = false;
 				break;
 			case SDL_KEYDOWN:
@@ -573,7 +573,7 @@ int main(int argc, char* argv[])
 				if (event.key.keysym.sym == SDLK_ESCAPE)
 					run = false;
 
-				if (event.key.keysym.sym == '!') 
+				if (event.key.keysym.sym == '!')
 					mnu.activate();
 
 				else if (event.key.keysym.sym == ',')

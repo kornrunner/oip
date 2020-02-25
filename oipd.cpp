@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -31,7 +31,7 @@ using namespace std;
 #include <signal.h>
 
 #define SNAPLEN 80
-	
+
 bool globalrun=true;
 const char* sniff_dev = 0;
 //const char* sniff_dev = "wlan0";
@@ -49,7 +49,7 @@ void handle_packet(u_char * a, const struct pcap_pkthdr* header, const u_char* p
 {
 	sniffargs* self = (sniffargs*)a;
 	const struct sniff_ethernet *ethernet;
-	const struct sniff_ip *ip;
+	const struct sniff_ip *ip = {0};
 	ethernet = (struct sniff_ethernet*)packet;
 	if (ntohs(ethernet->ether_type) == T_IP)
 		ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
@@ -59,7 +59,7 @@ void handle_packet(u_char * a, const struct pcap_pkthdr* header, const u_char* p
 		//cout << "read a packet from vlan " << VLANID(ntohs(vethernet->vlan_id)) << "\n";
 		if (ntohs(vethernet->ether_type) == T_IP)
 		{
-		//	cout << "\tand it was an ip packet\n";	
+		//	cout << "\tand it was an ip packet\n";
 			ip = (struct sniff_ip*)(packet + SIZE_8021Q);
 		}
 	}
@@ -87,10 +87,18 @@ int sniff(void* a)
 	int result;
 	bool clientrun = true;
 	const char* dev = sniff_dev;
-	char errbuf[PCAP_ERRBUF_SIZE];
+	char errbuf[PCAP_ERRBUF_SIZE] = {0};
 	if (!dev)
+	{
+		cout << "No capture device set, setting up for pcap replay";
+
 		dev = pcap_lookupdev(errbuf);
-        cout << "Looked up device: " << dev << "\n";
+		if (!dev) {
+			cerr << "pcap_lookupdev() failed: " << errbuf << endl;
+			exit(1);
+		}
+	}
+	cout << "Looked up device: " << dev << "\n";
 	if (clientrun)
 	{
 		//open up the device
@@ -107,13 +115,6 @@ int sniff(void* a)
 			clientrun = false;
 		}
 	}
-	if (!dev)
-	{
-		cerr << "Unable to open default device: " << errbuf << endl;
-		cerr << "Attempting to use eth0\n";
-		dev = "eth0";
-		//dev = "wlan0";
-	}
 	if (self->opts["filter"] != "")
 	{
 		struct bpf_program fp;
@@ -128,13 +129,13 @@ int sniff(void* a)
 			cerr << "Couldn't set filter: '" << self->opts["filter"] << "': " << pcap_geterr(handle) << "\n";
 		}
 	}
-	
+
 	int retry = 5;
 	while(globalrun && clientrun)
 	{
-		if (!self->pm.consumer) 
+		if (!self->pm.consumer)
 			clientrun = false; //lets not keep going if the consumer is gone
-		
+
 		//handle up to 10 packets at a shot
 		result = pcap_dispatch(handle, 10, handle_packet, (u_char*)self);
 		if (result > 0) //it succeeded
@@ -156,7 +157,7 @@ int sniff(void* a)
 			if (retry <= 0)
 				clientrun = false;
 		}
-		
+
 	}
 	self->pm.producerdead(); //notify the world that we are quitting
 	//can't touch the packetmanager now, because the other thread could kill it at any time
@@ -204,7 +205,7 @@ int main(int argc, char** argv)
 		sniff_dev = argv[1];
 
     cout << "Device: " << sniff_dev << "\n";
-			
+
 	signal(SIGINT, sigcatch);
 	//get a device to read from
 	if (setup())

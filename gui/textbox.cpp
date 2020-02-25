@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Utah State University    
+    Copyright 2008 Utah State University
 
     This file is part of OIP.
 
@@ -61,7 +61,7 @@ namespace gui
 		{
 		case SDLK_LEFT:
 			if (insertpos <= 0)
-			{	
+			{
 				insertpos = 0;
 				return false;
 			}
@@ -72,7 +72,7 @@ namespace gui
 			break;
 		case SDLK_RIGHT:
 			if (insertpos > txt.size())
-			{	
+			{
 				insertpos = txt.size();
 				return false;
 			}
@@ -119,7 +119,7 @@ namespace gui
 					txt.insert(insertpos, 1, (char)k.keysym.sym);
 				// */
 				txt.insert(insertpos, 1, (char)k.keysym.unicode);
-				
+
 				cachevalid = false;
 				insertpos++;
 				return true;
@@ -157,13 +157,19 @@ namespace gui
 #ifdef __linux__
 		else if (m.button == SDL_BUTTON_MIDDLE)
 		{
-			char data[1024];
+			char data[1025];
 			FILE* f = popen("xclip -o", "r");
 			if (!f)
 				cout << "install xclip if you want copy/paste to be functional\n";
 			else
 			{
-				data[fread(data, 1, 1024, f)] = 0;
+				int count = fread(data, 1, 1024, f);
+				if (count < 0)
+				{
+					perror("fread failed");
+					return false;
+				}
+				data[count] = 0;
 				pclose(f);
 				txt = data;
 				cout << "Pasted '" << data << "'\n";
@@ -177,7 +183,7 @@ namespace gui
 #endif
 
 
-		
+
 		return false;
 	}
 	bool textbox::mouseup(SDL_MouseButtonEvent&m)

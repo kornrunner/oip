@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Utah State University    
+    Copyright 2008 Utah State University
 
     This file is part of OIP.
 
@@ -48,7 +48,7 @@ namespace gui
 		bool showing;
 		Uint32 ti;
 		bool focused;
-		//which way to move the focus. 
+		//which way to move the focus.
 		virtual bool moveright();
 		virtual bool moveleft();
 		virtual bool moveup();
@@ -56,7 +56,7 @@ namespace gui
 		void dofade(int x, int y, const SDL_Surface* s);
 		bool mousestate[3];
 	public:
-		layout():which(0),dx(0),dy(0),fading(NONE),focused(false),hasborder(0) {selhilite=false;mousestate[0]=mousestate[1]=mousestate[2]=false;}
+		layout():which(0),dx(0),dy(0),fading(NONE),focused(false),hasborder(0) {selhilite=false;mousestate[0]=mousestate[1]=mousestate[2]=showing=false;ti=0;}
 
 		virtual void draw(int x, int y, SDL_Surface* s);
 		virtual bool keyup(SDL_KeyboardEvent & k);
@@ -65,12 +65,12 @@ namespace gui
 		virtual bool mousedown(SDL_MouseButtonEvent & m);
 		virtual bool mousemove(SDL_MouseMotionEvent & m) { return false; }
 
-		virtual bool focus(); 
+		virtual bool focus();
 		virtual void unfocus() {if (children.size()) children[which].c->unfocus(); focused = false;}
 
 		virtual void setSize(int width, int height) {w = width; h = height;}
-		
-		void addchild(base& c, int x, int y); 
+
+		void addchild(base& c, int x, int y);
 
 		void hide(fadetype f=PLAIN);
 		void show(fadetype f=PLAIN);

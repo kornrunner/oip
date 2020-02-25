@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -17,7 +17,7 @@
     along with OIP.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
- * This file handles particles and entities, and the interactions between them. 
+ * This file handles particles and entities, and the interactions between them.
  */
 #ifndef PARTICLEMANAGER_H
 #define PARTICLEMANAGER_H
@@ -37,7 +37,7 @@ private:
 	entity* mouseisdown;
 	bool oldmoving;
 public:
-	particlemanager():mouseisdown(NULL) {  }
+	particlemanager():mouseisdown(NULL) { xscale=yscale=0; mx=my=0; oldmoving=false; }
 	bool addpacket(unsigned int src, unsigned int  dst, unsigned int size, unsigned int color);
 	~particlemanager();
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2008 Utah State University    
+    Copyright 2008 Utah State University
 
     This file is part of OIP.
 

@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -46,7 +46,10 @@ int clientpm::clientthread(void* s)
 		{
 			senddata sd(self->data);
 			aes.encrypt(self->data, sd.paddedsize());
-			sendto(self->sock, (char*)self->data, sd.paddedsize(), 0, (struct sockaddr*)self->res->ai_addr, self->res->ai_addrlen);
+			if (sendto(self->sock, (char*)self->data, sd.paddedsize(), 0, (struct sockaddr*)self->res->ai_addr, self->res->ai_addrlen) < 0)
+			{
+				perror("failed to send update message");
+			}
 			lastsent = SDL_GetTicks();
 		}
 		if (lastrecieved + 30000 < SDL_GetTicks()) //TODO: not sure how to handle overflow case
@@ -54,7 +57,7 @@ int clientpm::clientthread(void* s)
 			self->running = false;
 			cerr << "Server hasn't responded in at least 30 seconds\n";
 			break;
-		} 
+		}
 		FD_SET(self->sock, &lset);
 		timeout.tv_sec = 0;
 		timeout.tv_usec = MINRATE * 1000;
@@ -74,11 +77,11 @@ int clientpm::clientthread(void* s)
 			len = recvfrom(self->sock, (char*)self->data, MAXPACKET, 0, (struct sockaddr*)&inaddr, &inlen);
 			aes.decrypt(self->data, len);
 			packet p(self->data, len);
-			if (p.getid() == self->sid) 
+			if (p.getid() == self->sid)
 			{
 				if (p.gettype() == DUMPPACKETS)
 				{
-					//i keep dying in here due to a race condition. 
+					//i keep dying in here due to a race condition.
 					datapacket dp(self->data, len);
 					dp.dumpdata(*self);
 				}
@@ -95,6 +98,9 @@ int clientpm::clientthread(void* s)
 
 clientpm::clientpm(const string& server, const map<string, string> & opts, Uint16 port)
 {
+	thread = 0;
+	ip = 0;
+	this->port = port;
 	running = true;
 	struct addrinfo hints;
 	res = NULL;
@@ -106,7 +112,7 @@ clientpm::clientpm(const string& server, const map<string, string> & opts, Uint1
 	char ap[8];
 	snprintf(ap, 8, "%hd", port);
 	int result;
-	if (result = getaddrinfo(server.c_str(), ap, &hints, &res)) 
+	if (result = getaddrinfo(server.c_str(), ap, &hints, &res))
 	{
 		cerr << "Unable to resolve " << server << ": " << gai_strerror(result) <<  "\n";
 #else
@@ -125,28 +131,34 @@ clientpm::clientpm(const string& server, const map<string, string> & opts, Uint1
 		cout << "Unable to look up " << server << ": " << WSAGetLastError() << "\n";
 #endif
 		running = false;
+		exit(EXIT_FAILURE);
 		return;
 	}
 
-	
-	
-	
+
+
+
 	sid = rand();
 
 	//open the socket
 	sock = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
+	if (sock < 0)
+	{
+		perror("Failed to open socket");
+		exit(EXIT_FAILURE);
+	}
 
 	//send the initial request.
 	setuppacket sp(data);
 	sp.setid(sid);
 	sp.setopts(opts);
 	aes.encrypt(data, sp.paddedsize());
-	if (!sendto(sock, (char*)data, sp.paddedsize(), 0, (struct sockaddr*)res->ai_addr, res->ai_addrlen))
+	if (sendto(sock, (char*)data, sp.paddedsize(), 0, (struct sockaddr*)res->ai_addr, res->ai_addrlen) < 0)
 	{
 		running = false;
-		cerr << "Unable to send the stream setup message\n";
+		perror("Unable to send the stream setup message");
 	}
-	if (running)	
+	if (running)
 		thread = SDL_CreateThread(clientthread, this);
 }
 
@@ -156,7 +168,7 @@ clientpm::~clientpm()
 	running = false;
 	//wait for the thread to quit
 	cerr << "Waiting for child thread...\n";
-	SDL_WaitThread(thread, NULL);	
+	SDL_WaitThread(thread, NULL);
 	//cerr << "Killing the thread\n";
 	//SDL_KillThread(thread);
 	cerr << "Freeing Resources for thread\n";
@@ -164,13 +176,20 @@ clientpm::~clientpm()
 	enddata ed(data);
 	ed.setid(sid);
 	aes.encrypt(data, ed.paddedsize());
-	if (res)
-		sendto(sock, (char*)data, ed.paddedsize(), 0, (struct sockaddr*)res->ai_addr, res->ai_addrlen);
-#ifndef WIN32
+	if (sock && res)
+	{
+		if (sendto(sock, (char*)data, ed.paddedsize(), 0, (struct sockaddr*)res->ai_addr, res->ai_addrlen) < 0)
+		{
+			perror("failed to send enddata message");
+		}
+	}
+
 	close(sock);
+
 	if (res)
+	{
 		freeaddrinfo(res);
-#endif
+	}
 }
 
 

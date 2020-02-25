@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -34,9 +34,9 @@ private:
 	bool running;
 	Uint32 ip;
 	Uint16 port;
-	Uint8  data[MAXPACKET];	
+	Uint8  data[MAXPACKET];
 	Uint16 sid;
-	Uint32 sock;
+	int sock;
 #ifndef WIN32
 	struct addrinfo *res;
 #else

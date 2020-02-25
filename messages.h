@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -36,7 +36,7 @@ using namespace std;
 enum packet_type {SETUP, SETUPACK, SENDDATA, DUMPPACKETS, ENDDATA};
 
 //the messages that we will send and recieve
-//the buffer in here comes from somewhere else. 
+//the buffer in here comes from somewhere else.
 class packet
 {
 protected:
@@ -64,7 +64,7 @@ public:
 	packet(Uint8* buffer, int s=0);
 	Uint32 getsequence() { return get32(0); }
 	void setsequence(Uint32 s) { put32(0, s);}
-	void setreserved() {memset(data + 4, '0', 12);} //don't want to send logical garbage
+	void setreserved() {memset(data + 4, 0, 12);} //don't want to send logical garbage
 	Uint8 getversion() { return get8(16);}
 	void setversion() {put8(16, 0);}
 	packet_type gettype() { return (packet_type)get8(17); }
@@ -72,7 +72,7 @@ public:
 	void setid(Uint16 id) {put16(18, id);}
 
 	virtual int getsize() { return 20;}
-	int paddedsize(int kl=16); 
+	int paddedsize(int kl=16);
 	Uint8* getdata() { return data;}
 
 };
@@ -106,10 +106,10 @@ public:
 #endif
 };
 
-//no extra data, just the message type 
+//no extra data, just the message type
 class senddata : public packet
 {
-public: 
+public:
 	senddata(Uint8*buffer, int s=0):packet(buffer, s) {if (!s) settype(SENDDATA);}
 };
 

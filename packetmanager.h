@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -27,6 +27,8 @@
 #include "packetsink.h"
 #include "packetpeek.h"
 
+#include <unordered_map>
+
 #define DEFAULTMAX 2000
 
 
@@ -43,24 +45,16 @@ public:
 	packettype():src(0),dst(0),color(0) {}
 	packettype(unsigned int s, unsigned int d, unsigned int c):src(s),dst(d),color(c) {}
 };
-#ifndef WIN32
-#include<ext/hash_map>
-class pthash
-{
-public:
-	size_t operator()(const packettype& pt) const
+
+ struct PackettypeHash
+ {
+	std::size_t operator()(const packettype&  k) const
 	{
-		return pt.src ^ ((pt.dst << 17) | (pt.dst >> 15)) ^ (pt.color);
+		return hash<int>()(k.src ^ k.dst >> 8 ^ k.dst << 8 ^ k.color << 6);
 	}
-};
-typedef __gnu_cxx::hash_map<packettype, unsigned int, pthash> pmdict;
-#else
-#include<map>
-typedef std::map<packettype, int> pmdict;
-#endif
+ };
 
-
-
+typedef std::unordered_map<packettype, unsigned int, PackettypeHash> pmdict;
 
 class packetmanager
 {
@@ -74,8 +68,8 @@ public:
 	virtual ~packetmanager() {SDL_DestroyMutex(packetlock);}
 
 	bool addpacket(unsigned int s, unsigned int d, unsigned int c, unsigned int size);
-    //virtual bool dumpdata(packetsink& ); 
-	virtual bool dumpdata(packetsink&, int); 
+    //virtual bool dumpdata(packetsink& );
+	virtual bool dumpdata(packetsink&, int);
 	void copydata(packetpeek& );
 	int size() {return count;}
 	bool empty() {return packets.begin() == packets.end();}

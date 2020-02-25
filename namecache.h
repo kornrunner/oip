@@ -1,5 +1,5 @@
 /*
-	Copyright 2008 Utah State University    
+	Copyright 2008 Utah State University
 
 	This file is part of OIP.
 
@@ -16,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with OIP.  If not, see <http://www.gnu.org/licenses/>.
 */
-//this class will do reverse name lookups on ip addresses. 
-//because these name lookups can be slow, and may even time out, 
+//this class will do reverse name lookups on ip addresses.
+//because these name lookups can be slow, and may even time out,
 //maybe we should do these asynchronously
 
 #ifndef NAMECACHE_H
@@ -26,13 +26,9 @@
 #include <string>
 using std::string;
 
-#ifndef	WIN32
-#include <ext/hash_map>
-typedef __gnu_cxx::hash_map<unsigned int, string> namehash;
-#else
-#include <map> //vc++ 6 doesnt have hash_map
-typedef std::map<unsigned int, string> namehash;
-#endif
+#include <unordered_map>
+typedef std::unordered_map<unsigned int, string> namehash;
+
 #include <string>
 #include <deque>
 using std::string;
