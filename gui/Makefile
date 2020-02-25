@@ -1,5 +1,5 @@
-LDFLAGS= -lcryptopp -lSDL -lSDL_image -lpcap `freetype-config --libs`
-CPPFLAGS = -g `freetype-config --cflags` 
+LDFLAGS= -lcryptopp -lSDL -lSDL_image -lpcap `pkg-config --libs freetype2`
+CPPFLAGS = -g `pkg-config --cflags freetype2`
 
 widgets = font.o widget.o label.o ../image.o textbox.o layout.o button.o option.o
 

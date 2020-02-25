@@ -14,8 +14,8 @@ oipprg_PROGRAMS=oip
 oip_SOURCES = $(coreobj) $(guiobj) $(widgets) oipgui.cpp
 
 #oip_LDADD = $(am_oip_LIBS) $(FT2_LIBS) -lfontconfig
-oip_LDADD = $(FT2_LIBS)
-oip_CXXFLAGS = $(FT2_CFLAGS) -DDATADIR=\"$(oip_datadir)\"
+oip_LDADD = $(FREETYPE_LIBS)
+oip_CXXFLAGS = $(FREETYPE_CFLAGS) -DDATADIR=\"$(oip_datadir)\"
 #oip_LDFLAGS = `pkg-config --libs-only-L free`
 #AM_CXXFLAGS = `freetype-config --cflags`
 oipdprgdir=$(prefix)/bin/
